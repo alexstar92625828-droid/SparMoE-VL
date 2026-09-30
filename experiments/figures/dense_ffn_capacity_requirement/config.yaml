@@ -1,0 +1,37 @@
+study: dense_ffn_capacity_requirement
+paper_scope: Figure 3
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_dense_vision
+backbone: frozen_dense_clip
+pretrained: models/ViT-L-14.pt
+
+data_contract:
+  dataset: COCO-val2017
+  annotations: data/eval/coco/annotations/captions_val2017.json
+  images: data/eval/coco/val2017
+  total_images: 5000
+  calibration_images: 1000
+  evaluation_images: 4000
+  seed: 42
+  split: torch_randperm_over_canonical_coco_image_order
+  disjoint: true
+  exhaustive: true
+
+analysis:
+  source: frozen_dense_clip_only
+  transformer_layers: 24
+  patch_tokens_per_image: 256
+  ffn_channels: 4096
+  capacity_levels: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  channel_ranking: mean_squared_gelu_activation_times_squared_c_proj_column_norm
+  comparison: local_dense_ffn_output_excluding_cls_token
+  acceptance:
+    cosine_similarity_at_least: 0.95
+    normalized_reconstruction_error_at_most: 0.20
+  batch_size: 16
+  tf32: false
+  layer_shards: [[1, 12], [13, 24]]
+
+reporting:
+  plot: heatmap_with_layer_mean_curve
+  generated_artifacts_root: outputs/figures/dense_ffn_capacity_requirement

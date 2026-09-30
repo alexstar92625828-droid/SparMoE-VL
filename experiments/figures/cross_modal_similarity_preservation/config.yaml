@@ -1,0 +1,48 @@
+study: cross_modal_similarity_preservation
+paper_scope: Figure 8
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_vision
+
+visual_encoder:
+  source: visual_main_experiment_stage2
+  checkpoint: checkpoints/sparmoe_vl_clip_vitl14/vision/seed_42/stage2/best.pt
+  training_seed: 42
+  training_data_seed: 42
+  training_samples: 500000
+  training_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  target_ratio: 0.7
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+  routing: learned_argmax
+
+text_encoder:
+  source: frozen_dense_clip
+  sparse_checkpoint: null
+
+image_features:
+  source_study: layerwise_representation_consistency
+  source_analysis: outputs/figures/layerwise_representation_consistency/analysis.json
+  representation: final_layer_cls_after_ln_post_and_projection
+
+evaluation:
+  dataset: COCO-val2017
+  images: 5000
+  captions: 25014
+  pairwise_similarities: 125070000
+  image_order: ascending_file_name
+  caption_order: annotation_file_order
+  matrix_block_size: 128
+  metrics: [pearson, matrix_cosine, mae]
+
+visualization:
+  selection: uniform_without_replacement_independent_of_model_scores
+  sample_seed: 42
+  matched_pairs: 256
+  ordering: average_linkage_dense_joint_image_text_embedding
+  display_groups: 64
+  pairs_per_group: 4
+  aggregation: non_overlapping_arithmetic_mean
+  shared_color_range: true
+
+reporting:
+  generated_artifacts_root: outputs/figures/cross_modal_similarity_preservation
+  plot_stem: cross_modal_similarity_preservation

@@ -1,0 +1,77 @@
+study: routing_granularity_geometry_preservation
+paper_scope: Figure 6
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_vision
+run_seed: 42
+
+training_data_contract:
+  source: ShareGPT4V
+  annotations: ShareGPT4V/annotations/sharegpt4v_1246k.json
+  images: ShareGPT4V/images
+  data_seed: 42
+  samples: 500000
+  ordered_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  relation_to_main_experiment: exact_same_ordered_visual_pool
+
+training:
+  protocol: spg_global_budget_then_frozen_spg_token_router
+  target_ratio: 0.7
+  steps: 5000
+  stage1_batch_size: 32
+  stage2_batch_size: 24
+  weight_decay: 0.05
+  router_temperature: 0.4
+  router_warmup_steps: 1000
+  budget_weight: 50.0
+  separation_weight: 1.0
+  stage1_trainable: [spg, reference_capacities, nested_channel_subspaces]
+  stage1_objective: [representation_preservation, global_budget_p, nested_capacity_separation]
+  stage1_frozen: [backbone, token_router]
+  stage2_objective: [representation_preservation, token_routing]
+  stage2_trainable: [token_router]
+  stage2_frozen: [backbone, spg, reference_capacities, nested_channel_subspaces]
+  expert_granularities:
+    n4:
+      capacity_factors: [0.7, 0.8, 0.9, 1.0]
+      protocol: spg_global_budget_then_frozen_spg_token_router
+      stage1:
+        batch_size: 32
+        learning_rate: 0.001
+      stage2:
+        batch_size: 24
+        learning_rate: 0.0003
+    n6:
+      capacity_factors: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      protocol: spg_global_budget_then_frozen_spg_token_router
+    n8:
+      capacity_factors: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      protocol: spg_global_budget_then_frozen_spg_token_router
+    n10:
+      capacity_factors: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+      protocol: spg_global_budget_then_frozen_spg_token_router
+
+checkpoint_placeholders:
+  n4_stage1: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n4/stage1/best.pt
+  n4_stage2: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n4/stage2/best.pt
+  n6_stage1: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n6/stage1/best.pt
+  n6_stage2: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n6/stage2/best.pt
+  n8_stage1: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n8/stage1/best.pt
+  n8_stage2: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n8/stage2/best.pt
+  n10_stage1: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n10/stage1/best.pt
+  n10_stage2: checkpoints/sparmoe_vl_clip_vitl14/studies/routing_granularity_geometry_preservation/n10/stage2/best.pt
+
+evaluation:
+  dataset: COCO-val2017
+  annotations: data/eval/coco/annotations/captions_val2017.json
+  images: data/eval/coco/val2017
+  image_count: 5000
+  caption_count: 25014
+  image_batch_size: 64
+  text_batch_size: 256
+  routing_conditions: [learned, capacity_matched_shuffle]
+  control_invariant: exact_expert_count_multiset_per_layer_and_inference_batch
+  metrics: [cosine_to_dense, image_to_text_r1, text_to_image_r1, mean_r1_retention, vision_ffn_macs]
+
+reporting:
+  generated_artifacts_root: outputs/figures/routing_granularity_geometry_preservation
+  plot_stem: routing_geometry_preservation

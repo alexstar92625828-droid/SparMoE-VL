@@ -1,0 +1,53 @@
+study: architecture_transfer
+paper_scope: Table 6, SigLIP ViT-B/16 rows
+family: SigLIP
+version: ViT-B/16
+model_key: siglip1_vit_b16
+open_clip_name: ViT-B-16-SigLIP
+pretrained: models/siglip1_b16/open_clip_model.safetensors
+tokenizer: models/siglip1_b16_tokenizer
+tokenizer_context_length: 64
+
+architecture:
+  image_size: 224
+  patch_size: 16
+  patches: 196
+  layers: 12
+  hidden_size: 768
+  ffn_size: 3072
+  heads: 12
+  vision_routing: all_patch_tokens_no_cls
+  text_routing: all_positions_except_last_pooled_position
+
+training:
+  modalities: [vision, text]
+  seeds: [42, 123, 2026]
+  data_seed: 42
+  samples: 500000
+  same_ordered_pool_in_both_stages: true
+  protocol: spg_global_budget_then_frozen_spg_token_router
+  stage1_trainable: [spg, reference_capacities, nested_channel_subspaces]
+  stage1_objective: [representation_preservation, global_budget_p, nested_capacity_separation]
+  stage1_frozen: [dense_backbone, token_router]
+  stage2_trainable: [token_router]
+  stage2_objective: [representation_preservation, token_routing]
+  stage2_frozen: [dense_backbone, spg, reference_capacities, nested_channel_subspaces]
+  steps_per_stage: 5000
+  stage1_learning_rate: 0.001
+  stage2_learning_rate: 0.0003
+  weight_decay: 0.05
+  router_temperature: 0.4
+  router_warmup_steps: 1000
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+  vision_target_ratio: 0.7
+  text_target_ratio: 0.6
+  vision_batch: {stage1: 128, stage2: 96}
+  text_batch: {micro: 256, gradient_accumulation: 1, effective: 256}
+  vision_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  text_pool_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+
+evaluation:
+  datasets: [COCO-val2017, Flickr30k-test]
+  coco: {images: 5000, captions: 25014}
+  flickr30k: {images: 1000, captions: 5000}
+  metrics: [I2T_R1, T2I_R1, FFN_reduction, average_retention]

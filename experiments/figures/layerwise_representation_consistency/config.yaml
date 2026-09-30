@@ -1,0 +1,50 @@
+study: layerwise_representation_consistency
+paper_scope: Figure 7
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_vision
+checkpoint: checkpoints/sparmoe_vl_clip_vitl14/vision/seed_42/stage2/best.pt
+
+checkpoint_contract:
+  role: visual_main_experiment_stage2
+  training_seed: 42
+  training_data_seed: 42
+  training_samples: 500000
+  training_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  target_ratio: 0.7
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+
+evaluation:
+  dataset: COCO-val2017
+  images: 5000
+  image_order: ascending_file_name
+  transformer_layers: 24
+  representation_point: post_transformer_block
+  tokens_per_image: 257
+  patches_per_image: 256
+  routing: learned_argmax
+  batch_size: 4
+  num_workers: 0
+  tf32: false
+
+metrics:
+  local_representation:
+    source: all_patch_tokens
+    measure: cosine_similarity
+    reporting: full_distribution_with_layerwise_median
+  global_representation:
+    source: cls_token
+    measures:
+      - cosine_similarity
+      - exact_centered_linear_cka
+
+cache:
+  format: float32_memory_map
+  resumable: true
+  files:
+    - dense_cls.f32.mmap
+    - sparse_cls.f32.mmap
+    - patch_cosine.f32.mmap
+
+reporting:
+  generated_artifacts_root: outputs/figures/layerwise_representation_consistency
+  plot_stem: layerwise_representation_consistency

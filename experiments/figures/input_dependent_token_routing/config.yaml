@@ -1,0 +1,50 @@
+study: input_dependent_token_routing
+paper_scope: Figure 5
+model: CLIP ViT-L/14
+routing: learned_argmax
+run_seed: 42
+
+checkpoints:
+  vision: checkpoints/sparmoe_vl_clip_vitl14/vision/seed_42/stage2/best.pt
+  text: checkpoints/sparmoe_vl_clip_vitl14/text/seed_42/stage2/best.pt
+  training_data_seed: 42
+  training_samples: 500000
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+  vision:
+    target_ratio: 0.7
+    training_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  text:
+    target_ratio: 0.6
+    training_pool_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+
+vision_input:
+  dataset: COCO-val2017
+  selection: fixed_paper_inputs_in_display_order
+  images:
+    - file_name: 000000256407.jpg
+      sha256: e9b63060910cbd8ff9d9f420204ec691d7e46d2034ea24857f6e4dbf1966f535
+    - file_name: 000000269682.jpg
+      sha256: c2198ff1b869a69eb7a41fa81ca66e251771eab91822cb262a2dd682fa375275
+    - file_name: 000000515828.jpg
+      sha256: cffa35700a8255de38930c3bf75055c83c6b09f20b949af0852f3099222b03ca
+    - file_name: 000000440336.jpg
+      sha256: e5c2df473a26427ae57950acec86d1e4d3a49cdf1a18d427cd1a354465408f00
+  layers_one_based: [6, 12, 18]
+  patch_grid: [16, 16]
+  overlay_alpha: 0.62
+
+text_input:
+  selection: fixed_paper_input
+  layer_one_based: 12
+  sha256: 7e1698fc87ce138984bcb50277ea50a5b296d1a72a481ed4ed2eb572c00017ce
+  text: >-
+    A crowded city street scene with several people walking near storefronts,
+    parked cars, bicycles, traffic signs, glass windows, colorful buildings,
+    and outdoor advertisements while pedestrians move through the urban area
+    under bright daylight, with reflections on the windows, objects arranged
+    along the sidewalk, and multiple visual details that describe the complex
+    relationship between people, vehicles, architecture, and public space.
+
+reporting:
+  generated_artifacts_root: outputs/figures/input_dependent_token_routing
+  panels: [vision_token_routing, text_token_routing]
