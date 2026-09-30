@@ -27,6 +27,12 @@ Use, modification, and redistribution are governed by the MIT License in
 baselines, please acknowledge this repository and the upstream methods,
 models, and datasets listed in `THIRD_PARTY.md`.
 
+## Overview
+
+![SparMoE-VL overview diagram](docs/over.png)
+
+[Open the original overview PDF](docs/over.pdf)
+
 ## Highlights
 
 - Two-stage sparse conversion for the vision and text towers of CLIP ViT-L/14.
