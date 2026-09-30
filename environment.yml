@@ -1,0 +1,28 @@
+name: sparmoe-vl
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pytorch=2.5.1
+  - torchvision=0.20.1
+  - pytorch-cuda=12.1
+  - numpy=1.26.4
+  - pip
+  - pip:
+      - open_clip_torch==3.3.0
+      - timm==1.0.26
+      - Pillow==12.1.1
+      - pytest==9.0.2
+      - ruff==0.14.4
+      - tqdm==4.67.3
+      - matplotlib==3.10.9
+      - pandas==2.2.1
+      - scipy==1.15.3
+      - scikit-learn==1.7.2
+      - PyYAML==6.0.3
+      - transformers==5.8.0
+      - safetensors==0.7.0
+      - tokenizers==0.22.2
+      - sentencepiece==0.2.1

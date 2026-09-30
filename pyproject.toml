@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sparmoe-vl"
+version = "0.1.0"
+description = "Alignment-preserving sparse FFN subspace learning for contrastive vision-language encoders"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+authors = [
+  {name = "Degang Wang"},
+  {name = "Xiupeng Shi"},
+]
+keywords = ["vision-language", "mixture-of-experts", "dynamic-sparsity", "CLIP"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3.10",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.26,<2",
+  "open_clip_torch>=3.3,<4",
+  "Pillow>=10",
+  "torch>=2.1",
+  "timm>=1.0,<2",
+  "torchvision>=0.16",
+  "tqdm>=4.66",
+  "transformers>=5.8,<6",
+]
+
+[project.optional-dependencies]
+analysis = ["matplotlib>=3.8", "pandas>=2.2", "scikit-learn>=1.4", "scipy>=1.12"]
+llava = [
+  "safetensors==0.7.0",
+  "sentencepiece==0.2.1",
+  "tokenizers==0.22.2",
+  "transformers==5.8.0",
+]
+dev = ["pytest>=8,<10", "ruff>=0.6,<1"]
+
+[project.scripts]
+sparmoe-train = "sparmoe_vl.train_two_stage:main"
+sparmoe-eval-vision = "sparmoe_vl.vision.evaluate:main"
+sparmoe-eval-text = "sparmoe_vl.text.evaluate:main"
+sparmoe-llava-pope = "sparmoe_vl.downstream.llava.evaluation.pope:main"
+sparmoe-llava-mme = "sparmoe_vl.downstream.llava.evaluation.mme:main"
+sparmoe-llava-gqa = "sparmoe_vl.downstream.llava.evaluation.gqa:main"
+sparmoe-llava-vqav2 = "sparmoe_vl.downstream.llava.evaluation.vqav2:main"
+sparmoe-llava-macs = "sparmoe_vl.downstream.llava.evaluation.macs:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 96
+target-version = "py310"

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use SparMoE-VL, please cite this work."
+title: "SparMoE-VL: Alignment-Preserving Sparse Feed-Forward Subspace Learning for Contrastive Vision-Language Encoders"
+type: software
+authors:
+  - family-names: Wang
+    given-names: Degang
+  - family-names: Shi
+    given-names: Xiupeng
+version: 0.1.0
+date-released: 2026-09-07
+license: MIT
+
