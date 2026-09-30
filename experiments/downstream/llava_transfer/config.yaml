@@ -1,0 +1,77 @@
+study: llava_transfer
+paper_artifact: Table 5
+
+models:
+  language_model: llava-v1.5-7b
+  dense_vision_tower: openai/clip-vit-large-patch14-336
+  replaced_component: vision_tower_only
+  frozen_components: [llm, multimodal_projector, dense_clip_weights]
+  vision_select_layer: -2
+  vision_select_feature: patch
+  image_tokens: 576
+
+training_data:
+  dataset: ShareGPT4V
+  data_seed: 42
+  ordered_pool_size: 500000
+  ordered_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  identical_to_clip_vitl14_visual_main_experiment: true
+  identical_between_stage1_and_stage2: true
+
+training:
+  protocol: spg_global_budget_then_frozen_spg_token_router
+  run_seeds: [42, 123, 2026]
+  target_ratio: 0.7
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+  stage1:
+    steps: 5000
+    batch_size: 8
+    learning_rate: 0.001
+    weight_decay: 0.05
+    temperature: 0.4
+    alignment: all_24_patch_hidden_states_and_final_pooled_feature
+    objective: [representation_preservation, global_budget_p, nested_capacity_separation]
+    trainable: [spg, reference_capacities, nested_channel_subspaces]
+    frozen: [dense_backbone, token_router]
+  stage2:
+    steps: 5000
+    batch_size: 8
+    learning_rate: 0.0003
+    weight_decay: 0.05
+    temperature: 0.4
+    router_warmup_steps: 1000
+    objective: [representation_preservation, token_routing]
+    trainable: [token_router]
+    frozen: [dense_backbone, spg, reference_capacities, nested_channel_subspaces]
+
+evaluation:
+  deterministic_decoding: true
+  batch_size: 4
+  standard_deviation: sample_n_minus_1
+  visual_ffn_macs:
+    images: 500_unique_pope_images
+    batch_size: 16
+    dense_class_token: true
+  pope:
+    questions: 8910
+    max_new_tokens: 8
+    metrics: [average_f1, yes_ratio]
+  mme_perception:
+    categories: 10
+    groups: 1057
+    questions: 2114
+    max_new_tokens: 8
+    metric: score
+  gqa_testdev_balanced:
+    questions: 12578
+    max_new_tokens: 12
+    metric: accuracy
+  vqav2_validation:
+    questions: 214354
+    max_new_tokens: 12
+    slices: [[0, 53588], [53588, 107176], [107176, 160764], [160764, 214354]]
+    metric: vqa_consensus_accuracy
+
+outputs:
+  generated_root: outputs/downstream/llava_transfer
+  checkpoint_placeholder: checkpoints/sparmoe_vl_clip336_llava
