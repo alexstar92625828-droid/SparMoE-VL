@@ -1,0 +1,22 @@
+method: TEAL-CLIP-FFN
+modality: text
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  samples: 500000
+  data_seed: 42
+  ordered_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+  require_complete_main_pool: true
+calibration:
+  processing_seeds: [42, 123, 2026]
+  target_ffn_reduction: 0.425
+  base_step_size: 0.05
+  histogram_bins: 10000
+  batch_size: 64
+  weight_updates: 0
+evaluation:
+  datasets: [coco, flickr30k]
+  image_batch_size: 128
+  text_batch_size: 512
+  workers: 8
+

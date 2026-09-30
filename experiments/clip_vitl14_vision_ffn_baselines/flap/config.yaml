@@ -1,0 +1,24 @@
+method: FLAP-CLIP-FFN
+modality: vision
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  samples: 500000
+  data_seed: 42
+  ordered_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  require_complete_main_pool: true
+calibration:
+  processing_seeds: [42, 123, 2026]
+  batch_size: 128
+  batches_per_seed: 3907
+  final_batch_size: 32
+  target_ffn_reduction: 0.3563
+  metric: WIFV
+  allocation: adaptive_layerwise_mlp
+  bias_compensation: mean_input
+  weight_updates: 0
+evaluation:
+  datasets: [coco, flickr30k]
+  image_batch_size: 32
+  text_batch_size: 256
+  workers: 8

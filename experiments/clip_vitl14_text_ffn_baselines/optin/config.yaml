@@ -1,0 +1,25 @@
+method: OPTIN-CLIP-FFN
+modality: text
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  samples: 500000
+  data_seed: 42
+  text_ordered_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+  paired_path_ordered_sha256: 08c0ae51ce65ccdd8d037606fffc668b5b1d80470232b8d4e200817e446eb63e
+  require_complete_main_pool: true
+search:
+  processing_seeds: [42, 123, 2026]
+  batch_size: 32
+  batches_per_seed: 15625
+  target_ffn_reduction_by_seed:
+    42: 0.441
+    123: 0.450
+    2026: 0.462
+  manifold_sample_k: 768
+  weight_updates: 0
+evaluation:
+  datasets: [coco]
+  image_batch_size: 128
+  text_batch_size: 512
+  workers: 8

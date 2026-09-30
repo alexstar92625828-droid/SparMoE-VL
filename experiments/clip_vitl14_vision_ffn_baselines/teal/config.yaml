@@ -1,0 +1,27 @@
+method: TEAL-CLIP-FFN
+modality: vision
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  samples: 500000
+  data_seed: 42
+  ordered_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  require_complete_main_pool: true
+calibration:
+  processing_seeds: [42, 123, 2026]
+  selected_images: 500000
+  patch_tokens_per_image: 256
+  target_ffn_reduction: 0.3563
+  base_step_size: 0.05
+  histogram_bins: 10000
+  batch_size: 16
+  workers: 8
+  weight_updates: 0
+token_policy:
+  cls_token: dense
+  patch_tokens: magnitude_sparsified
+evaluation:
+  datasets: [coco, flickr30k]
+  image_batch_size: 32
+  text_batch_size: 256
+  workers: 8

@@ -1,0 +1,87 @@
+study: component_ablation
+paper_scope: Table 8
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_vision_component_ablation
+modality: vision
+pretrained: models/ViT-L-14.pt
+
+data_contract:
+  dataset: ShareGPT4V
+  annotations: ShareGPT4V/annotations/sharegpt4v_1246k.json
+  image_root: ShareGPT4V/images
+  samples: 500000
+  data_seed: 42
+  ordered_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  equality: exact_visual_main_experiment_pool
+
+shared_training:
+  source: frozen_dense_clip_only
+  protocol: spg_global_budget_then_frozen_spg_token_router
+  steps: 5000
+  batch_size: 24
+  stage1_learning_rate: 0.001
+  stage2_learning_rate: 0.0003
+  weight_decay: 0.05
+  target_ratio: 0.7
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+  router_temperature: 0.4
+  router_warmup_steps: 1000
+  stage1_trainable: [spg_or_ablation_replacement, reference_capacities, nested_channel_subspaces]
+  stage1_objective: [representation_objective, global_budget_p, nested_capacity_separation]
+  stage1_frozen: [dense_backbone, token_router]
+  stage2_objective: [representation_objective, token_routing]
+  stage2_trainable: [token_router]
+  stage2_frozen: [dense_backbone, spg_or_ablation_replacement, reference_capacities, nested_channel_subspaces]
+  log_every: 100
+  num_workers: 8
+
+methods:
+  without_spg:
+    paper_label: w/o SPG
+    execution: separately_trained
+    seeds: [42, 123, 2026]
+    replacement: per_layer_per_expert_independent_learnable_soft_masks
+    mask_learning_rate: 0.001
+  without_token_router:
+    paper_label: w/o Token Router
+    execution: inference_only_on_main_stage2_checkpoints
+    seeds: [42, 123, 2026]
+    replacement: uniform_random_per_patch_token
+    coco_routing_seed: 42
+    flickr30k_routing_seed: 43
+  without_layer_adaptive_budget:
+    paper_label: w/o Layer-Adaptive Budget
+    execution: separately_trained
+    seeds: [42, 123, 2026]
+    replacement: fixed_full_ratio_0.7_in_every_layer
+    budget_weight: 0.0
+  without_geometry_preservation:
+    paper_label: w/o Geometry Preservation
+    execution: separately_trained
+    seeds: [42, 123, 3407]
+    replacement: clip_image_text_contrastive_supervision
+    seed_note: registered paper seeds for this ablation
+  sparmoe_vl:
+    paper_label: SparMoE-VL
+    execution: reuse_main_stage2_checkpoints
+    seeds: [42, 123, 2026]
+    replacement: none
+
+evaluation:
+  datasets: [COCO-val2017, Flickr30k-test]
+  coco:
+    images: 5000
+    captions: 25014
+    annotations_sha256: afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9
+  flickr30k:
+    images: 1000
+    captions: 5000
+    annotations_sha256: 395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137
+  batch_size: 128
+  num_workers: 8
+  dense_reference: measured_during_each_evaluation
+
+reporting:
+  values: computed_from_generated_per_seed_results
+  dispersion: sample_standard_deviation_ddof_1
+  generated_artifacts_root: outputs/sparmoe_vl_clip_vitl14/studies/component_ablation

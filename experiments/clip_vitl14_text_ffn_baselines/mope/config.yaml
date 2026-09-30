@@ -1,0 +1,48 @@
+method: MoPE-CLIP-FFN
+modality: text
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  unique_samples: 500000
+  data_seed: 42
+  ordered_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+  paired_path_sha256: 08c0ae51ce65ccdd8d037606fffc668b5b1d80470232b8d4e200817e446eb63e
+  require_complete_main_pool: true
+structure_selection:
+  seed: 42
+  samples: 500000
+  held_out_samples: 0
+  taylor_metric: first_order_gradient_rewiring
+  group_size: 16
+  groups_per_layer: 192
+  ranking_metric: batch_local_paired_recall_drop
+recovery:
+  seeds: [42, 123, 2026]
+  steps_per_stage: 5000
+  batch_size: 256
+  stage1_exposures: 1280000
+  stage2_exposures: 1280000
+  stage_sequences_identical: true
+  total_exposures: 2560000
+  learning_rate: 2.0e-5
+  weight_decay: 3.0e-4
+  warmup_ratio: 0.1
+  loss_weights:
+    contrastive: 1.0
+    similarity_distillation: 1.0
+    feature_distillation: 1000.0
+    hidden_distillation: 1.0
+budget:
+  target_ffn_reduction_by_seed:
+    42: 0.4374995800700163
+    123: 0.4535723188148742
+    2026: 0.4624093863898526
+  retained_groups_by_seed:
+    42: 108
+    123: 105
+    2026: 103
+evaluation:
+  datasets: [coco, flickr30k]
+  image_batch_size: 128
+  text_batch_size: 512
+  workers: 8

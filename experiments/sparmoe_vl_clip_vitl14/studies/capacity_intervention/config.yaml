@@ -1,0 +1,63 @@
+study: capacity_intervention
+paper_scope: Table 7
+model: CLIP ViT-L/14
+model_key: clip_vit_l14_vision_n8
+modality: vision
+pretrained: models/ViT-L-14.pt
+
+training:
+  protocol: spg_global_budget_then_frozen_spg_token_router
+  description: Stage 1 learns the N=8 SPG under global budget P; Stage 2 freezes that structure and trains only token routing
+  seeds: [42, 123, 2026]
+  data_seed: 42
+  samples: 500000
+  ordered_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  steps: 5000
+  batch_size: 24
+  stage1_learning_rate: 0.001
+  stage2_learning_rate: 0.0003
+  weight_decay: 0.05
+  target_ratio: 0.7
+  capacity_factors: [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  router_temperature: 0.4
+  router_warmup_steps: 1000
+  stage1_trainable: [spg, reference_capacities, nested_channel_subspaces]
+  stage1_objective: [representation_preservation, global_budget_p, nested_capacity_separation]
+  stage1_frozen: [dense_backbone, token_router]
+  stage2_objective: [representation_preservation, token_routing]
+  stage2_trainable: [token_router]
+  stage2_frozen: [dense_backbone, spg, reference_capacities, nested_channel_subspaces]
+  log_every: 100
+  save_every: 0
+  random_evaluations: 3
+  num_workers: 8
+
+evaluation:
+  dataset: COCO-val2017
+  images: 5000
+  annotations_sha256: afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9
+  batch_size: 128
+  num_workers: 8
+  fixed_evaluation_seed: 42
+  recovery_cosine_threshold: 0.95
+  recovery_definition: per-image feature cosine >= 0.95
+  token_allocations:
+    - Self
+    - Uniform
+    - Shuffled
+  layer_allocations:
+    - Layer-Self
+    - Layer-Uniform
+    - Layer-Shuffled
+  shuffled_definition:
+    token: reverse learned capacity assignments within each layer and batch while preserving counts
+    layer: assign sorted layer-budget logits in descending order across network depth
+  metrics:
+    - Activated FFN MACs (G)
+    - Cosine
+    - NRE
+    - Recovery Rate
+
+reporting:
+  seeds: [42, 123, 2026]
+  dispersion: sample_standard_deviation_ddof_1

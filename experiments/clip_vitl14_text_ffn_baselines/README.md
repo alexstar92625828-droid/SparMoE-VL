@@ -20,5 +20,5 @@ Generated thresholds, metrics, and summaries are written under
 `outputs/clip_vitl14_text_ffn_baselines/` and are not stored in this code
 repository.
 
-Method papers, upstream repositories, and recorded revisions are listed in
+Method references, upstream repositories, and recorded revisions are listed in
 the repository-level `THIRD_PARTY.md`.

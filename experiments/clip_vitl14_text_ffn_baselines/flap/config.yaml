@@ -1,0 +1,32 @@
+method: FLAP-CLIP-FFN
+modality: text
+model_name: ViT-L-14
+data:
+  source: ShareGPT4V
+  unique_samples: 500000
+  data_seed: 42
+  ordered_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+  require_complete_main_pool: true
+  mirror_main_two_stage_exposures: true
+calibration:
+  processing_seeds: [42, 123, 2026]
+  train_steps_per_stage: 5000
+  batch_size: 256
+  stage1_exposures: 1280000
+  stage2_exposures: 1280000
+  total_exposures: 2560000
+  metric: WIFV
+  allocation: layer_zscore_then_global_ranking
+  bias_compensation: mean_input
+  weight_updates: 0
+budget:
+  reference_sha256: 2204bebbdbc17c132e2baf5db0b2ca365074c0eb314c5db3ce03c971a76d3453
+  target_ffn_reduction_by_seed:
+    42: 0.4374995800700163
+    123: 0.4535723188148742
+    2026: 0.4624093863898526
+evaluation:
+  datasets: [coco, flickr30k]
+  image_batch_size: 128
+  text_batch_size: 512
+  workers: 8

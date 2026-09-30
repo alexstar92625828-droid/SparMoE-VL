@@ -1,0 +1,74 @@
+study: cross_dataset_generalization
+paper_artifact: Table 4
+model:
+  name: ViT-L-14
+  pretrained: models/ViT-L-14.pt
+  dense_backbone_frozen: true
+
+checkpoints:
+  vision:
+    source: visual main experiment Stage 2
+    target_ratio: 0.7
+    training_data_seed: 42
+    training_pool_size: 500000
+    training_pool_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  text:
+    source: text main experiment Stage 2
+    target_ratio: 0.6
+    training_data_seed: 42
+    training_pool_size: 500000
+    training_pool_sha256: c76621edddeeb546f6fa798552b2ae11eb409c63b520080d42a8a37b66f31e9d
+  training_seeds: [42, 123, 2026]
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+
+evaluation:
+  routing: learned_argmax
+  dense_cache_batch_size: 128
+  sparse_batch_size: 128
+  cifar100_visual_batch_size: 32
+  num_workers: 8
+  standard_deviation: sample (n-1)
+  datasets:
+    coco:
+      split: val2017
+      images: 5000
+      texts: 25014
+      metrics: [I2T_R1, T2I_R1]
+    flickr30k:
+      split: test
+      images: 1000
+      texts: 5000
+      metrics: [I2T_R1, T2I_R1]
+    cifar100:
+      split: test
+      images: 10000
+      classes: 100
+      prompt: "a photo of a {class_name}."
+      metric: top1_accuracy
+    imagenet1k:
+      split: validation
+      images: 50000
+      classes: 1000
+      prompts: OpenCLIP OPENAI_IMAGENET_TEMPLATES
+      label_mapping: timm canonical ImageNet-1K synsets
+      metric: top1_accuracy
+    food101:
+      split: test
+      images: 25250
+      classes: 101
+      prompt: "a photo of {class_name}, a type of food."
+      metric: top1_accuracy
+
+cache:
+  location: outputs/studies/cross_dataset_generalization/dense_cache.pt
+  shared_by_all_modalities_and_seeds: true
+
+evaluation_data_identities:
+  coco_annotations_sha256: afe3b30e403dd7f228e2373023abbd60042a6e10ec6874d3652df034d289ebb9
+  flickr_annotations_sha256: 395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137
+  cifar100_test_sha256: 4b67687d9933c4db8f0831104447f15b93774f4f464bd0516f0f0f2ac83b7864
+  imagenet_labels_sha256: 313fc3f23c864dde9183c9a368809065765dd1b657a6904fded44e3e46d34604
+  imagenet_synsets_sha256: 70002b0ff5de60a3a17a82dbfcff291931f96225ddf941ad2e182fc39e183d15
+  imagenet_order_sha256: dc7c4a6d3e129595211adc6a6c0b35541f5935ffa08bbbb6826753f4fbe122b2
+  food101_test_sha256: 4c8977721ce1efe10085ef1be227dc39c4c374b578d6f08614253e46f0750594
+  food101_order_sha256: cd90179aadf7bdeba7b77aa9df6935ca963d0093d0309d9c46b265d9d2edd3b9

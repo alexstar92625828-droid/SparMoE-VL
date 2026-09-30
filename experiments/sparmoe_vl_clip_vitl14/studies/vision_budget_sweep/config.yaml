@@ -1,0 +1,68 @@
+study: vision_budget_sweep
+paper_artifact: Table 3 and Figure 2
+protocol: spg_global_budget_then_frozen_spg_token_router
+model:
+  name: ViT-L-14
+  pretrained: models/ViT-L-14.pt
+  sparse_visual_layers: all 24
+  capacity_factors: [0.7, 0.8, 0.9, 1.0]
+
+budget_points:
+  trained_in_sweep: [0.4, 0.5, 0.6, 0.8]
+  reused_from_visual_main_experiment: 0.7
+training_seeds: [42, 123, 2026]
+
+data:
+  annotations: ShareGPT4V/annotations/sharegpt4v_1246k.json
+  image_root: ShareGPT4V/images
+  data_seed: 42
+  candidate_pool_size: 500000
+  ordered_sha256: f035f2b9e7d44ee0acb6ec37fd53945ee784a987892a20c31393f04230f284a0
+  same_candidate_pool_in_both_stages: true
+
+stage1:
+  steps: 5000
+  batch_size: 32
+  optimizer_sample_exposures: 160000
+  optimizer: AdamW
+  learning_rate: 0.001
+  weight_decay: 0.05
+  mask_temperature: 0.4
+  gradient_clip_norm: 1.0
+  loss_weights:
+    representation: 100.0
+    global_budget: 50.0
+    capacity_separation: 1.0
+  trainable: [spg, reference_capacities, nested_channel_subspaces]
+  frozen: [dense_backbone, token_router]
+  best_checkpoint_budget_loss_below: 0.01
+  log_every_steps: 100
+  save_every_steps: 500
+  num_workers: 8
+
+stage2:
+  steps: 5000
+  batch_size: 24
+  optimizer_sample_exposures: 120000
+  optimizer: AdamW
+  learning_rate: 0.0003
+  weight_decay: 0.05
+  temperature: 0.4
+  router_warmup_steps: 1000
+  random_route_evaluations: 3
+  gradient_clip_norm: 1.0
+  loss_weights:
+    representation: 100.0
+    routing: 1.0
+  trainable: [token_router]
+  frozen: [dense_backbone, spg, reference_capacities, nested_channel_subspaces]
+  log_every_steps: 100
+  save_every_steps: 500
+  num_workers: 8
+
+evaluation:
+  datasets: [COCO-val2017, Flickr30k-test]
+  batch_size: 128
+  num_workers: 4
+  efficiency_dataset: COCO-val2017
+  seeds_aggregated_with: sample_standard_deviation
