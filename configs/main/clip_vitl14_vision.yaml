@@ -1,0 +1,21 @@
+experiment: main_vision
+paper_table: 2
+model_name: ViT-L-14
+target_ratio: 0.7
+capacity_factors: [0.7, 0.8, 0.9, 1.0]
+max_samples: 500000
+data_seed: 42
+training_seeds: [42, 123, 2026]
+protocol:
+  name: spg_global_budget_then_frozen_spg_token_router
+  stage1_trainable: [spg, reference_capacities, nested_channel_subspaces]
+  stage1_objective: [representation_preservation, global_budget_p, nested_capacity_separation]
+  stage1_frozen: [dense_backbone, token_router]
+  stage2_trainable: [token_router]
+  stage2_objective: [representation_preservation, token_routing]
+  stage2_frozen: [dense_backbone, spg, reference_capacities, nested_channel_subspaces]
+stages:
+  stage1: {steps: 5000, batch_size: 32, learning_rate: 0.001}
+  stage2: {steps: 5000, batch_size: 24, learning_rate: 0.0003, router_warmup: 1000}
+optimizer: {name: AdamW, weight_decay: 0.05, gradient_clip: 1.0}
+temperature: 0.4
